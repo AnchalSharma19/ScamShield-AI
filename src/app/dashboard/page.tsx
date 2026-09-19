@@ -1,9 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Loader2 } from "lucide-react";
+import { Loader2, ShieldAlert, ShieldCheck, Activity } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { RiskLevelPieChart, CategoryBarChart } from "@/components/dashboard/DashboardCharts";
+import {
+  RiskLevelPieChart,
+  CategoryBarChart,
+  InputTypeDonutChart,
+  ActivityTrendCard,
+  AvgRiskScoreGauge,
+} from "@/components/dashboard/DashboardCharts";
 import type { DashboardStats } from "@/lib/supabase/stats";
 
 export default function DashboardPage() {
@@ -24,17 +30,19 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-3xl flex-1 space-y-6 px-4 py-10">
+    <div className="mx-auto w-full max-w-4xl flex-1 space-y-6 px-4 py-10">
       <div>
         <h1 className="text-2xl font-bold">Your activity</h1>
         <p className="text-sm text-muted-foreground">A quick look at everything you&apos;ve checked so far.</p>
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <StatTile label="Total Analyses" value={stats.total} />
-        <StatTile label="Flagged (High/Critical)" value={stats.scamCount} tone="danger" />
-        <StatTile label="Looked Safe" value={stats.safeCount} tone="safe" />
+        <StatTile icon={Activity} label="Total Analyses" value={stats.total} />
+        <StatTile icon={ShieldAlert} label="Flagged (High/Critical)" value={stats.scamCount} tone="danger" />
+        <StatTile icon={ShieldCheck} label="Looked Safe" value={stats.safeCount} tone="safe" />
       </div>
+
+      <ActivityTrendCard data={stats.trend} />
 
       <div className="grid gap-4 sm:grid-cols-2">
         <Card>
@@ -49,6 +57,16 @@ export default function DashboardPage() {
 
         <Card>
           <CardHeader>
+            <CardTitle className="text-base">Average Risk Score</CardTitle>
+            <CardDescription>Mean score across all analyses</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <AvgRiskScoreGauge score={stats.avgRiskScore} />
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
             <CardTitle className="text-base">Scam Categories</CardTitle>
             <CardDescription>Most common categories detected</CardDescription>
           </CardHeader>
@@ -56,18 +74,43 @@ export default function DashboardPage() {
             <CategoryBarChart data={stats.byCategory} />
           </CardContent>
         </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Input Types</CardTitle>
+            <CardDescription>Where the analyzed content came from</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <InputTypeDonutChart data={stats.byInputType} />
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
 }
 
-function StatTile({ label, value, tone }: { label: string; value: number; tone?: "danger" | "safe" }) {
-  const toneClass = tone === "danger" ? "text-red-500" : tone === "safe" ? "text-emerald-500" : "";
+function StatTile({
+  icon: Icon,
+  label,
+  value,
+  tone,
+}: {
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  value: number;
+  tone?: "danger" | "safe";
+}) {
+  const toneClass = tone === "danger" ? "text-red-500" : tone === "safe" ? "text-emerald-500" : "text-primary";
   return (
     <Card>
-      <CardContent className="py-4">
-        <p className="text-xs text-muted-foreground">{label}</p>
-        <p className={`text-2xl font-bold tabular-nums ${toneClass}`}>{value}</p>
+      <CardContent className="flex items-center gap-3 py-4">
+        <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-muted ${toneClass}`}>
+          <Icon className="h-4 w-4" />
+        </span>
+        <div>
+          <p className="text-xs text-muted-foreground">{label}</p>
+          <p className={`text-2xl font-bold tabular-nums ${toneClass}`}>{value}</p>
+        </div>
       </CardContent>
     </Card>
   );

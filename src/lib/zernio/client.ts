@@ -194,6 +194,16 @@ export async function getConversationMessages(
   return zernioFetch<ListMessagesResult>(`/v1/inbox/conversations/${conversationId}/messages?${params.toString()}`);
 }
 
+export type ZernioConversationStatus = "read" | "unread" | "archived" | "unarchived";
+
+/** Marks a conversation read/unread or archives/unarchives it — mirrors the state back to the platform itself, not just our own view of it. */
+export async function updateConversationStatus(conversationId: string, status: ZernioConversationStatus): Promise<void> {
+  await zernioFetch(`/v1/inbox/conversations/${conversationId}`, {
+    method: "PUT",
+    body: JSON.stringify({ status }),
+  });
+}
+
 export interface SendInboxMessageInput {
   accountId: string;
   message: string;

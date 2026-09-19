@@ -2,11 +2,11 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Trash2, Loader2 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Trash2, Loader2, History as HistoryIcon } from "lucide-react";
+import { Card, CardContent, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { RISK_LEVEL_COLORS } from "@/lib/scam/categories";
+import { inputTypeMeta } from "@/lib/scam/inputTypes";
 
 interface HistoryRow {
   id: string;
@@ -30,6 +30,10 @@ function groupByDay(rows: HistoryRow[]): Record<string, HistoryRow[]> {
     groups[label].push(row);
   }
   return groups;
+}
+
+function relativeClock(iso: string): string {
+  return new Date(iso).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
 }
 
 export default function HistoryPage() {
@@ -79,16 +83,19 @@ export default function HistoryPage() {
 
       {rows.length === 0 ? (
         <Card>
-          <CardHeader>
-            <CardTitle>Nothing here yet</CardTitle>
+          <CardContent className="flex flex-col items-center gap-3 py-10 text-center">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-muted text-muted-foreground">
+              <HistoryIcon className="h-6 w-6" />
+            </div>
+            <CardTitle className="text-base">Nothing here yet</CardTitle>
             <CardDescription>
               {signedOut
                 ? "Sign in to start building your history, or run a scan right now."
                 : "Run a scan and it'll show up here."}
             </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button nativeButton={false} render={<Link href="/analyze" />}>Run a scan</Button>
+            <Button nativeButton={false} render={<Link href="/analyze" />} className="mt-1">
+              Run a scan
+            </Button>
           </CardContent>
         </Card>
       ) : (
@@ -98,28 +105,42 @@ export default function HistoryPage() {
             <div className="space-y-2">
               {dayRows.map((row) => {
                 const colors = RISK_LEVEL_COLORS[row.risk_level] ?? RISK_LEVEL_COLORS.LOW;
+                const { label: typeLabel, icon: TypeIcon } = inputTypeMeta(row.input_type);
                 return (
-                  <Card key={row.id}>
-                    <CardContent className="flex items-center justify-between gap-4 py-4">
+                  <Card key={row.id} className="group overflow-hidden">
+                    <CardContent className="flex items-center gap-3 py-3.5">
+                      <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${colors.bg} ${colors.text}`}>
+                        <TypeIcon className="h-5 w-5" />
+                      </span>
+
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2">
-                          <span className="font-medium">{row.scam_category}</span>
-                          <Badge variant="outline" className="text-xs">
-                            {row.input_type}
-                          </Badge>
+                          <span className="truncate font-medium">{row.scam_category}</span>
+                          <span className="shrink-0 text-xs text-muted-foreground">· {typeLabel}</span>
                         </div>
-                        <p className="truncate text-sm text-muted-foreground">{row.summary}</p>
+                        <p className="truncate text-sm text-muted-foreground">{row.summary || "No summary available"}</p>
                       </div>
-                      <div className={`rounded-full px-3 py-1 text-sm font-semibold ${colors.bg} ${colors.text}`}>
-                        {row.risk_score}
+
+                      <div className="flex shrink-0 flex-col items-end gap-1">
+                        <div className={`rounded-full px-2.5 py-1 text-xs font-semibold ${colors.bg} ${colors.text}`}>
+                          {row.risk_score}
+                        </div>
+                        <span className="text-[11px] text-muted-foreground/70">{relativeClock(row.created_at)}</span>
                       </div>
+
                       <Button
                         variant="ghost"
                         size="icon"
+                        className="shrink-0 opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100"
                         onClick={() => handleDelete(row.id)}
                         disabled={deletingId === row.id}
+                        aria-label="Delete this analysis"
                       >
-                        <Trash2 className="h-4 w-4 text-muted-foreground" />
+                        {deletingId === row.id ? (
+                          <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                        ) : (
+                          <Trash2 className="h-4 w-4 text-muted-foreground" />
+                        )}
                       </Button>
                     </CardContent>
                   </Card>

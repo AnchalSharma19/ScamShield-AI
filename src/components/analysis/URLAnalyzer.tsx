@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Loader2, Link as LinkIcon } from "lucide-react";
+import { Loader2, Link as LinkIcon, CheckCircle2, XCircle, AlertTriangle, CircleDot } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -75,28 +75,36 @@ export function URLAnalyzer() {
 
             <Separator />
 
-            <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
+            <div className="grid grid-cols-2 gap-x-4 gap-y-2.5 text-sm">
               <span className="text-muted-foreground">Domain</span>
-              <span className="text-right font-mono">{result.metadata.domain}</span>
+              <span className="truncate text-right font-mono">{result.metadata.domain}</span>
+
               <span className="text-muted-foreground">HTTPS</span>
-              <span className="text-right">{result.metadata.https_enabled ? "✅ Yes" : "❌ No"}</span>
+              <MetaValue ok={result.metadata.https_enabled} okLabel="Yes" badLabel="No" />
+
               <span className="text-muted-foreground">IP-based address</span>
-              <span className="text-right">{result.metadata.is_ip_based ? "⚠️ Yes" : "No"}</span>
+              <MetaValue ok={!result.metadata.is_ip_based} okLabel="No" badLabel="Yes" />
+
               <span className="text-muted-foreground">URL shortener</span>
-              <span className="text-right">{result.metadata.uses_url_shortener ? "⚠️ Yes" : "No"}</span>
+              <MetaValue ok={!result.metadata.uses_url_shortener} okLabel="No" badLabel="Yes" />
+
               <span className="text-muted-foreground">Redirects</span>
-              <span className="text-right">{result.metadata.redirect_count}</span>
+              <span className="text-right tabular-nums">{result.metadata.redirect_count}</span>
             </div>
 
             {result.suspicious_signals.length > 0 && (
               <>
                 <Separator />
                 <div>
-                  <h3 className="mb-2 text-sm font-semibold">Suspicious signals</h3>
-                  <ul className="space-y-1">
+                  <h3 className="mb-2 flex items-center gap-1.5 text-sm font-semibold">
+                    <AlertTriangle className="h-4 w-4 text-destructive" />
+                    Suspicious signals
+                  </h3>
+                  <ul className="space-y-1.5">
                     {result.suspicious_signals.map((s, idx) => (
-                      <li key={idx} className="text-sm text-muted-foreground">
-                        🔴 {s}
+                      <li key={idx} className="flex items-start gap-2 text-sm text-muted-foreground">
+                        <CircleDot className="mt-0.5 h-3 w-3 shrink-0 text-destructive" />
+                        {s}
                       </li>
                     ))}
                   </ul>
@@ -110,5 +118,14 @@ export function URLAnalyzer() {
         </Card>
       )}
     </div>
+  );
+}
+
+function MetaValue({ ok, okLabel, badLabel }: { ok: boolean; okLabel: string; badLabel: string }) {
+  return (
+    <span className={`flex items-center justify-end gap-1 text-right ${ok ? "text-emerald-600 dark:text-emerald-400" : "text-amber-600 dark:text-amber-400"}`}>
+      {ok ? <CheckCircle2 className="h-3.5 w-3.5" /> : <XCircle className="h-3.5 w-3.5" />}
+      {ok ? okLabel : badLabel}
+    </span>
   );
 }
