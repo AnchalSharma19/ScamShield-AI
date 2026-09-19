@@ -44,7 +44,6 @@ export async function listDiscordMessages(channelId: string, opts: { limit?: num
   return discordFetch<DiscordMessage[]>(`/channels/${channelId}/messages?${params.toString()}`);
 }
 
-/** Sends a message into a channel as the bot. */
 export async function sendDiscordMessage(channelId: string, content: string): Promise<DiscordMessage> {
   return discordFetch<DiscordMessage>(`/channels/${channelId}/messages`, {
     method: "POST",

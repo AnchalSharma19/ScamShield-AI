@@ -3,7 +3,6 @@ import { cookies } from "next/headers";
 
 export { createServiceClient } from "./serviceClient";
 
-/** Server-side Supabase client for use in Route Handlers and Server Components. */
 export async function createClient() {
   const cookieStore = await cookies();
 

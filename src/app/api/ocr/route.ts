@@ -3,7 +3,7 @@ import { analyzeImage } from "@/lib/scam/pipeline";
 import { saveAnalysis } from "@/lib/supabase/history";
 import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
 
-const MAX_FILE_BYTES = 8 * 1024 * 1024; // 8MB
+const MAX_FILE_BYTES = 8 * 1024 * 1024;
 const ALLOWED_TYPES = new Set(["image/png", "image/jpeg", "image/webp"]);
 
 export async function POST(request: Request) {

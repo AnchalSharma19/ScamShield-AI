@@ -20,9 +20,7 @@ function decodeSignature(header: string): Buffer | null {
   try {
     const decoded = Buffer.from(value, "base64");
     if (decoded.length === SHA256_BYTE_LENGTH) return decoded;
-  } catch {
-    // fall through
-  }
+  } catch {}
 
   return null;
 }

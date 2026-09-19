@@ -30,7 +30,6 @@ export type ScamCategory = z.infer<typeof ScamCategory>;
 export const InputType = z.enum(["text", "email", "whatsapp", "job_offer", "social_media", "screenshot", "url", "sms"]);
 export type InputType = z.infer<typeof InputType>;
 
-// ---- Prompt 1: AI scam classification ----
 export const AiAnalysisSchema = z.object({
   risk_score: z.number().min(0).max(100),
   risk_level: RiskLevel,
@@ -43,7 +42,6 @@ export const AiAnalysisSchema = z.object({
 });
 export type AiAnalysis = z.infer<typeof AiAnalysisSchema>;
 
-// ---- Prompt 4: rule/indicator extraction (also used by our own rule engine) ----
 export const IndicatorSchema = z.object({
   type: z.string(),
   severity: z.enum(["low", "medium", "high", "critical"]),
@@ -53,7 +51,6 @@ export const IndicatorSchema = z.object({
 });
 export type Indicator = z.infer<typeof IndicatorSchema>;
 
-// ---- Combined scoring engine output ----
 export const ScoreBreakdownSchema = z.object({
   ai_score: z.number(),
   rule_score: z.number(),
@@ -85,7 +82,6 @@ export const AnalysisResultSchema = z.object({
 });
 export type AnalysisResult = z.infer<typeof AnalysisResultSchema>;
 
-// ---- URL analysis ----
 export const UrlMetadataSchema = z.object({
   url: z.string(),
   domain: z.string(),

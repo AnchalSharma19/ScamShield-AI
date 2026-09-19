@@ -40,7 +40,6 @@ export interface SlackOAuthResult {
   authedUserId: string;
 }
 
-/** Exchanges the OAuth `code` from the redirect callback for a bot token, scoped to the installing workspace. */
 export async function exchangeOAuthCode(code: string, redirectUri: string): Promise<SlackOAuthResult> {
   const clientId = process.env.SLACK_CLIENT_ID;
   const clientSecret = process.env.SLACK_CLIENT_SECRET;
@@ -80,7 +79,6 @@ export async function openDirectMessage(token: string, userId: string): Promise<
   return channel.id;
 }
 
-/** Sends a message into a channel/DM as the bot. */
 export async function postMessage(token: string, channel: string, text: string): Promise<{ ts: string }> {
   const { ts } = await slackFetch<{ ts: string }>("/chat.postMessage", token, { channel, text });
   return { ts };
@@ -102,7 +100,6 @@ export async function listSlackMessages(token: string, channel: string, opts: { 
   return messages;
 }
 
-/** Looks up a Slack user's display name, for the inbox UI's participant label. */
 export async function getUserDisplayName(token: string, userId: string): Promise<string | null> {
   try {
     const { user } = await slackFetch<{ user: { real_name?: string; name?: string } }>("/users.info", token, { user: userId });
