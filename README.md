@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # ScamShield AI
 
 An AI-powered scam and fraud detection platform. Paste a suspicious message, job offer, screenshot, or URL and get an explainable risk score — combining an LLM analysis, a context-aware rule engine, URL technical checks, and RAG similarity against known scam patterns.
@@ -149,3 +150,6 @@ The cache is keyed on message text alone, not `input_type` — `classifyMessage`
 ## Notes on the AI guardrails
 
 Every prompt in `src/lib/ai/prompts.ts` explicitly instructs the model not to invent facts, not to claim it "visited" a URL unless real fetch metadata is provided, and not to declare something "100% a scam" without strong evidence — the UI reflects uncertainty (e.g. OCR confidence warnings) rather than hiding it.
+=======
+# ScamShield-AI
+>>>>>>> a0b1fa75f39ccecc2609efd1dc6ecf1bdb66113d
