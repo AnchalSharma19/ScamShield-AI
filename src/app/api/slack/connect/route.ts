@@ -3,7 +3,6 @@ import { createClient } from "@/lib/supabase/server";
 
 const BOT_SCOPES = ["chat:write", "im:history", "im:read", "users:read"].join(",");
 
-/** OAuth-redirect connect flow for Slack — mirrors the Zernio connect route's shape. */
 export async function GET(request: Request) {
   const { origin: requestOrigin } = new URL(request.url);
   // Behind a tunnel/reverse proxy, request.url's origin is the local address

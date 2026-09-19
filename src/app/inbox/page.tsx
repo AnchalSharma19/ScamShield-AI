@@ -240,7 +240,6 @@ export default function InboxPage() {
 
   return (
     <div className="flex h-screen w-full flex-1 overflow-hidden">
-      {/* Conversation list */}
       <div className={`flex w-full flex-col border-r border-border md:w-[26rem] md:shrink-0 ${showThreadOnMobile ? "hidden md:flex" : "flex"}`}>
         <div className="space-y-3 border-b border-border p-4">
           <div className="flex items-center gap-2">
@@ -328,7 +327,6 @@ export default function InboxPage() {
         </div>
       </div>
 
-      {/* Thread panel */}
       <div className={`min-w-0 flex-1 flex-col ${showThreadOnMobile ? "flex" : "hidden md:flex"}`}>
         {!selected ? (
           <div className="flex flex-1 flex-col items-center justify-center gap-2 text-center">

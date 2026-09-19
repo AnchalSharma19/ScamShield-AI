@@ -3,7 +3,7 @@ import { checkTelegramConnectStatus } from "@/lib/zernio/client";
 import { createClient } from "@/lib/supabase/server";
 import { saveConnectedChannel } from "@/lib/supabase/channels";
 
-/** Polled by the frontend every ~3s while a Telegram connect code is pending. On "connected", persists the channel for the signed-in user. */
+/** On "connected", persists the channel for the signed-in user. */
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const code = searchParams.get("code");

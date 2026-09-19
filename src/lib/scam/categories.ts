@@ -23,7 +23,6 @@ export const SCAM_CATEGORIES = [
 
 export type ScamCategoryName = (typeof SCAM_CATEGORIES)[number];
 
-/** Tailwind color tokens keyed by risk level, used across badges/charts. */
 export const RISK_LEVEL_COLORS: Record<string, { bg: string; text: string; dot: string }> = {
   LOW: { bg: "bg-emerald-500/10", text: "text-emerald-600 dark:text-emerald-400", dot: "bg-emerald-500" },
   MEDIUM: { bg: "bg-amber-500/10", text: "text-amber-600 dark:text-amber-400", dot: "bg-amber-500" },

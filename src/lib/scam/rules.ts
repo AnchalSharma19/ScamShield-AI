@@ -14,8 +14,7 @@ export interface ScamRule {
 /**
  * Phrases that, when found near a match, flip a rule from "suspicious" to
  * "safety advice" — e.g. "Never share your OTP with anyone" should NOT score
- * as an OTP-request red flag. This is the context check called out in the
- * plan: don't just keyword-match, look at what surrounds the keyword.
+ * as an OTP-request red flag.
  */
 const NEGATION_CUES = [
   "never share",
@@ -102,7 +101,6 @@ export function runRuleEngine(text: string): RuleEngineResult {
   let total = 0;
 
   for (const match of matches) {
-    // Only count each rule once even if it matches multiple times.
     if (seen.has(match.rule.id)) continue;
 
     const negated = isNegated(text, match.index);

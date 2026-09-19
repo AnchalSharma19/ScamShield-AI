@@ -37,9 +37,7 @@ async function zernioFetch<T>(path: string, init: RequestInit = {}): Promise<T> 
     let parsed: { code?: string; error?: string; details?: Record<string, unknown> } = {};
     try {
       parsed = JSON.parse(errText);
-    } catch {
-      // non-JSON error body — fall through with parsed left empty
-    }
+    } catch {}
     throw new ZernioApiError(
       response.status,
       parsed.code,
@@ -72,7 +70,6 @@ export interface ZernioConnectUrlResult {
   state: string;
 }
 
-/** Starts the OAuth connect flow for a platform, returning the URL to redirect the user's browser to. */
 export async function getConnectUrl(
   platform: ZernioConnectPlatform,
   profileId: string,
@@ -186,7 +183,6 @@ export interface ListMessagesResult {
   pagination: { hasMore: boolean; nextCursor: string | null };
 }
 
-/** Fetches the message thread for one conversation, oldest first (chat order). */
 export async function getConversationMessages(
   conversationId: string,
   accountId: string,
@@ -205,7 +201,7 @@ export interface SendInboxMessageInput {
   attachmentType?: "image" | "video" | "audio" | "file";
 }
 
-/** Replies into an existing conversation — used for the bot's risk-alert reply, regardless of platform (WhatsApp, Instagram, Facebook, Telegram, SMS all go through this one endpoint). */
+/** Replies into an existing conversation, regardless of platform (WhatsApp, Instagram, Facebook, Telegram, SMS all go through this one endpoint). */
 export async function sendInboxMessage(conversationId: string, input: SendInboxMessageInput): Promise<{ id: string }> {
   return zernioFetch<{ id: string }>(`/v1/inbox/conversations/${conversationId}/messages`, {
     method: "POST",

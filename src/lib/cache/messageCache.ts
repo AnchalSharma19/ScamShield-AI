@@ -4,7 +4,7 @@ import { getRedis, getVectorIndex, isCacheConfigured } from "./clients";
 import type { AnalysisResult } from "@/types/analysis";
 
 const CACHE_KEY_VERSION = "v1"; // bump to invalidate every cached entry after a scoring-pipeline change
-const TTL_SECONDS = Number(process.env.ANALYSIS_CACHE_TTL_SECONDS) || 60 * 60 * 24 * 7; // 7 days
+const TTL_SECONDS = Number(process.env.ANALYSIS_CACHE_TTL_SECONDS) || 60 * 60 * 24 * 7;
 const SEMANTIC_THRESHOLD = Number(process.env.SEMANTIC_CACHE_SIMILARITY_THRESHOLD) || 0.95;
 const MIN_LENGTH_FOR_SEMANTIC = 20; // very short strings embed too generically to match meaningfully
 

@@ -63,10 +63,7 @@ export interface ChannelProcessResult {
 
 /**
  * Handles one inbound channel message end-to-end, shared by every connected
- * platform (Zernio-backed and direct): resolve which ScamShield user owns
- * the account, claim the message for idempotency, analyze it (text or the
- * first image attachment), save it to history, and reply in the same thread
- * if the risk level clears the alert threshold.
+ * platform (Zernio-backed and direct).
  */
 export async function handleInboundChannelMessage(input: ChannelMessageInput): Promise<ChannelProcessResult> {
   const owner = await findUserByChannelAccount(input.platform, input.accountId);

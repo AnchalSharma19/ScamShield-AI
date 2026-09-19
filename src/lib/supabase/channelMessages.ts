@@ -75,7 +75,6 @@ export interface ChannelMessageRiskInfo {
   category: string;
 }
 
-/** Looks up risk info for a batch of messages (by their platform message id) shown in a conversation thread, to overlay a risk badge on flagged ones. */
 export async function getRiskInfoForMessages(platformMessageIds: string[]): Promise<ChannelMessageRiskInfo[]> {
   if (!isSupabaseConfigured() || platformMessageIds.length === 0) return [];
 
@@ -108,12 +107,6 @@ export interface ConversationRiskTimelinePoint {
   category: string;
 }
 
-/**
- * Full ordered risk history for one conversation (every analyzed inbound
- * message, oldest first) — the input to the conversation-level risk score
- * and escalation detection, since a scam's trajectory across messages can
- * reveal what no single message's score does on its own.
- */
 export async function getConversationRiskTimeline(conversationId: string, platform?: string): Promise<ConversationRiskTimelinePoint[]> {
   if (!isSupabaseConfigured()) return [];
 

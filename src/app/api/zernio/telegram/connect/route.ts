@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getTelegramConnectCode } from "@/lib/zernio/client";
 import { getOrCreateZernioProfile } from "@/lib/supabase/channels";
 
-/** Starts a Telegram connection: generates the access code the user sends to Zernio's bot. No redirect involved — the frontend shows this and polls /api/zernio/telegram/status. */
+/** Starts a Telegram connection: generates the access code the user sends to Zernio's bot. No redirect involved. */
 export async function POST() {
   let profileId: string;
   try {

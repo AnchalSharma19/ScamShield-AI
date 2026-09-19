@@ -53,7 +53,7 @@ export interface ConnectedChannelInput {
   phoneNumber?: string;
 }
 
-/** Records a newly connected channel for the currently signed-in user (runs with their session, not the service role). Returns the row's id. */
+/** Records a newly connected channel for the currently signed-in user (runs with their session, not the service role). */
 export async function saveConnectedChannel(userId: string, input: ConnectedChannelInput): Promise<string> {
   const supabase = await createClient();
   const { data, error } = await supabase
@@ -77,7 +77,6 @@ export async function saveConnectedChannel(userId: string, input: ConnectedChann
   return data.id as string;
 }
 
-/** Removes a connected channel row (used to roll back a partially-completed connect flow). */
 export async function deleteConnectedChannel(id: string): Promise<void> {
   const supabase = await createClient();
   await supabase.from("connected_channels").delete().eq("id", id);

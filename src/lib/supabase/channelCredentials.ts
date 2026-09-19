@@ -15,7 +15,6 @@ export async function saveChannelCredential(connectedChannelId: string, token: s
   if (error) throw new Error(`Failed to save channel credential: ${error.message}`);
 }
 
-/** Looks up the stored token for a connected channel, by platform + provider account id. */
 export async function getChannelToken(platform: string, providerAccountId: string): Promise<string | null> {
   if (!isSupabaseConfigured()) return null;
 
@@ -38,7 +37,6 @@ export async function getChannelToken(platform: string, providerAccountId: strin
   return (credential?.token as string) ?? null;
 }
 
-/** Looks up the stored token directly by the connected_channels row id (used by the inbox routes, which already have the row). */
 export async function getChannelTokenById(connectedChannelId: string): Promise<string | null> {
   if (!isSupabaseConfigured()) return null;
 
