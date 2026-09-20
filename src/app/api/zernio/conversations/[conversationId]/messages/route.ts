@@ -4,22 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getConversationMessages, sendInboxMessage } from "@/lib/zernio/client";
 import { getRiskInfoForMessages, getConversationRiskTimeline } from "@/lib/supabase/channelMessages";
 import { computeConversationRisk } from "@/lib/scam/conversationRisk";
-import type { SupabaseClient } from "@supabase/supabase-js";
-
-/**
- * The Zernio API key is shared across every ScamShield user, so an accountId
- * alone isn't proof of ownership — verify it's actually one of THIS user's
- * connected channels before doing anything through it.
- */
-async function requireOwnedChannel(supabase: SupabaseClient, userId: string, accountId: string): Promise<boolean> {
-  const { data } = await supabase
-    .from("connected_channels")
-    .select("id")
-    .eq("user_id", userId)
-    .eq("provider_account_id", accountId)
-    .maybeSingle();
-  return data != null;
-}
+import { requireOwnedZernioAccount } from "@/lib/supabase/channels";
 
 export async function GET(request: Request, { params }: { params: Promise<{ conversationId: string }> }) {
   const { conversationId } = await params;
@@ -37,7 +22,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ conv
   } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Not signed in" }, { status: 401 });
 
-  if (!(await requireOwnedChannel(supabase, user.id, accountId))) {
+  if (!(await requireOwnedZernioAccount(supabase, user.id, accountId))) {
     return NextResponse.json({ error: "Not your channel" }, { status: 403 });
   }
 
@@ -84,7 +69,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ con
   } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Not signed in" }, { status: 401 });
 
-  if (!(await requireOwnedChannel(supabase, user.id, parsed.data.accountId))) {
+  if (!(await requireOwnedZernioAccount(supabase, user.id, parsed.data.accountId))) {
     return NextResponse.json({ error: "Not your channel" }, { status: 403 });
   }
 

@@ -5,6 +5,7 @@ import { Loader2, ArrowLeft, AlertTriangle, Search, Inbox as InboxIcon, Send, Me
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { RISK_LEVEL_COLORS } from "@/lib/scam/categories";
+import { platformMeta } from "@/lib/scam/platforms";
 
 interface Conversation {
   id: string;
@@ -82,10 +83,21 @@ function relativeTime(iso: string): string {
   return new Date(iso).toLocaleDateString(undefined, { month: "short", day: "numeric" });
 }
 
-function Avatar({ name, size = "h-11 w-11 text-sm" }: { name: string; size?: string }) {
+function Avatar({ name, platform, size = "h-11 w-11 text-sm" }: { name: string; platform?: string; size?: string }) {
+  const meta = platform ? platformMeta(platform) : null;
+  const PlatformIcon = meta?.icon;
   return (
-    <div className={`flex shrink-0 items-center justify-center rounded-full font-semibold text-white ${avatarColor(name)} ${size}`}>
-      {initials(name)}
+    <div className="relative shrink-0">
+      <div className={`flex items-center justify-center rounded-full font-semibold text-white ${avatarColor(name)} ${size}`}>
+        {initials(name)}
+      </div>
+      {PlatformIcon && meta && (
+        <span
+          className={`absolute -right-0.5 -bottom-0.5 flex h-4 w-4 items-center justify-center rounded-full text-white ring-2 ring-background ${meta.badgeClass}`}
+        >
+          <PlatformIcon className="h-2.5 w-2.5" />
+        </span>
+      )}
     </div>
   );
 }
@@ -142,6 +154,7 @@ export default function InboxPage() {
   const [showThreadOnMobile, setShowThreadOnMobile] = useState(false);
   const [draft, setDraft] = useState("");
   const [sending, setSending] = useState(false);
+  const [messagesError, setMessagesError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -188,17 +201,51 @@ export default function InboxPage() {
       : `/api/channels/conversations/${conversation.id}/messages`;
   }
 
+  async function loadMessages(conversation: Conversation) {
+    try {
+      const res = await fetch(messagesUrl(conversation));
+      const data = await res.json();
+      if (!res.ok) {
+        setMessagesError(data.error ?? "Failed to load messages");
+        setMessages([]);
+        setConversationRisk(null);
+        return;
+      }
+      setMessagesError(null);
+      setMessages(data.messages ?? []);
+      setConversationRisk(data.conversationRisk ?? null);
+    } catch {
+      setMessagesError("Could not reach the inbox service. Please try again.");
+      setMessages([]);
+      setConversationRisk(null);
+    }
+  }
+
+  function markAsRead(conversation: Conversation) {
+    if (!ZERNIO_PLATFORMS.has(conversation.platform) || !conversation.unreadCount) return;
+
+    // Optimistic — the unread badge should disappear the instant the thread
+    // opens, not wait on a round trip. If the request fails, the count just
+    // reappears next time the conversation list refetches from Zernio.
+    setConversations((prev) => prev?.map((c) => (c.id === conversation.id ? { ...c, unreadCount: 0 } : c)) ?? null);
+
+    fetch(`/api/zernio/conversations/${conversation.id}/status`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ accountId: conversation.accountId, status: "read" }),
+    }).catch(() => {
+      // Silent — a failed mark-as-read isn't worth interrupting the user over.
+    });
+  }
+
   function openConversation(conversation: Conversation) {
     setSelectedId(conversation.id);
     setShowThreadOnMobile(true);
     setMessages(null);
     setConversationRisk(null);
-    fetch(messagesUrl(conversation))
-      .then((res) => res.json())
-      .then((data) => {
-        setMessages(data.messages ?? []);
-        setConversationRisk(data.conversationRisk ?? null);
-      });
+    setMessagesError(null);
+    loadMessages(conversation);
+    markAsRead(conversation);
   }
 
   async function sendReply() {
@@ -230,9 +277,7 @@ export default function InboxPage() {
         return;
       }
 
-      const refreshed = await fetch(messagesUrl(selected)).then((r) => r.json());
-      setMessages(refreshed.messages ?? []);
-      setConversationRisk(refreshed.conversationRisk ?? null);
+      await loadMessages(selected);
     } finally {
       setSending(false);
     }
@@ -305,7 +350,7 @@ export default function InboxPage() {
                   selectedId === c.id ? "bg-muted" : ""
                 }`}
               >
-                <Avatar name={c.participantName || "?"} />
+                <Avatar name={c.participantName || "?"} platform={c.platform} />
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center justify-between gap-2">
                     <span className="truncate text-sm font-semibold">{c.participantName || "Unknown"}</span>
@@ -340,7 +385,7 @@ export default function InboxPage() {
               <button onClick={() => setShowThreadOnMobile(false)} className="text-muted-foreground hover:text-foreground md:hidden">
                 <ArrowLeft className="h-5 w-5" />
               </button>
-              <Avatar name={selected.participantName || "?"} size="h-9 w-9 text-xs" />
+              <Avatar name={selected.participantName || "?"} platform={selected.platform} size="h-9 w-9 text-xs" />
               <div className="min-w-0">
                 <p className="truncate text-sm font-semibold">{selected.participantName}</p>
                 <p className="truncate text-xs capitalize text-muted-foreground">
@@ -357,6 +402,15 @@ export default function InboxPage() {
               {messages === null ? (
                 <div className="flex justify-center py-8">
                   <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                </div>
+              ) : messagesError ? (
+                <div className="flex flex-col items-center gap-2 py-8 text-center">
+                  <AlertTriangle className="h-6 w-6 text-destructive" />
+                  <p className="text-sm font-medium text-destructive">Couldn&apos;t load this conversation</p>
+                  <p className="max-w-xs text-xs text-muted-foreground">{messagesError}</p>
+                  <Button variant="outline" size="sm" className="mt-1" onClick={() => selected && loadMessages(selected)}>
+                    Try again
+                  </Button>
                 </div>
               ) : messages.length === 0 ? (
                 <p className="py-8 text-center text-sm text-muted-foreground">No messages yet.</p>

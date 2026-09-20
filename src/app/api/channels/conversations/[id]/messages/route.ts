@@ -23,6 +23,14 @@ async function loadOwnedChannel(userId: string, id: string): Promise<ConnectedRo
     .eq("user_id", userId)
     .in("platform", ["slack", "discord"])
     .maybeSingle();
+
+  if (!data || !data.channel_id) {
+    // Diagnostic only: distinguishes "no row at all" (id mismatch / not this
+    // user's row) from "row exists but channel_id was never set" (a bug in
+    // the connect flow), instead of a bare 403 with no lead.
+    console.error("[channels messages] ownership check failed", JSON.stringify({ userId, requestedId: id, foundRow: data ?? null }));
+  }
+
   return data;
 }
 

@@ -72,6 +72,18 @@
   --chart-3: oklch(0.75 0.15 85);
   --chart-4: oklch(0.7 0.16 25);
   --chart-5: oklch(0.65 0.15 150);
+  /* Validated categorical palette for identity charts (input-type breakdown, etc). */
+  --viz-cat-1: #2a78d6;
+  --viz-cat-2: #eb6834;
+  --viz-cat-3: #1baf7a;
+  --viz-cat-4: #eda100;
+  --viz-cat-5: #e87ba4;
+  --viz-other: oklch(0.6 0.02 245);
+  /* Risk-level status colors, shared with RISK_LEVEL_COLORS in lib/scam/categories.ts. */
+  --viz-risk-low: #10b981;
+  --viz-risk-medium: #f59e0b;
+  --viz-risk-high: #f97316;
+  --viz-risk-critical: #ef4444;
   --radius: 1rem;
   --sidebar: oklch(1 0 0 / 55%);
   --sidebar-foreground: oklch(0.26 0.03 245);
@@ -107,6 +119,16 @@
   --chart-3: oklch(0.8 0.15 85);
   --chart-4: oklch(0.75 0.16 25);
   --chart-5: oklch(0.72 0.15 150);
+  --viz-cat-1: #3987e5;
+  --viz-cat-2: #d95926;
+  --viz-cat-3: #199e70;
+  --viz-cat-4: #c98500;
+  --viz-cat-5: #d55181;
+  --viz-other: oklch(0.55 0.02 245);
+  --viz-risk-low: #10b981;
+  --viz-risk-medium: #f59e0b;
+  --viz-risk-high: #f97316;
+  --viz-risk-critical: #ef4444;
   --sidebar: oklch(0.14 0.02 245 / 70%);
   --sidebar-foreground: oklch(0.92 0.01 245);
   --sidebar-primary: oklch(0.68 0.17 250);
