@@ -47,6 +47,8 @@ export function MessageInput({
     }
   }
 
+  const nearLimit = text.length > 9000;
+
   return (
     <div className="space-y-3">
       <Textarea
@@ -56,9 +58,12 @@ export function MessageInput({
         rows={8}
         maxLength={10000}
         disabled={loading}
+        className="resize-none"
       />
       <div className="flex items-center justify-between">
-        <span className="text-xs text-muted-foreground">{text.length}/10000</span>
+        <span className={`text-xs tabular-nums ${nearLimit ? "font-medium text-amber-600 dark:text-amber-400" : "text-muted-foreground"}`}>
+          {text.length.toLocaleString()}/10,000
+        </span>
         <Button onClick={analyze} disabled={loading || !text.trim()}>
           {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShieldCheck className="h-4 w-4" />}
           {loading ? "Analyzing..." : "Analyze Message"}

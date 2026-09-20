@@ -1,11 +1,11 @@
 import { AlertTriangle, CheckCircle2, ShieldAlert } from "lucide-react";
 import type { Indicator } from "@/types/analysis";
 
-const SEVERITY_ICON: Record<string, string> = {
-  low: "🟡",
-  medium: "🟠",
-  high: "🔴",
-  critical: "🔴",
+const SEVERITY_DOT: Record<string, string> = {
+  low: "bg-amber-400",
+  medium: "bg-orange-500",
+  high: "bg-red-500",
+  critical: "bg-red-600",
 };
 
 export function RiskFactors({ indicators, redFlags, safeSignals }: { indicators: Indicator[]; redFlags: string[]; safeSignals: string[] }) {
@@ -23,7 +23,7 @@ export function RiskFactors({ indicators, redFlags, safeSignals }: { indicators:
               .map((indicator, idx) => (
                 <li key={idx} className="flex items-center justify-between rounded-md border bg-card px-3 py-2 text-sm">
                   <span className="flex items-center gap-2">
-                    <span>{SEVERITY_ICON[indicator.severity] ?? "⚪"}</span>
+                    <span className={`h-2 w-2 shrink-0 rounded-full ${SEVERITY_DOT[indicator.severity] ?? "bg-muted-foreground"}`} />
                     {indicator.type}
                   </span>
                   <span className="font-mono text-xs text-muted-foreground">+{indicator.score}</span>

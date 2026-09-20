@@ -2,12 +2,13 @@
 
 import { Suspense, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { Loader2, MessageCircle, Trash2, Smartphone, Send } from "lucide-react";
+import { Loader2, MessageCircle, Trash2, Smartphone, Send, Plug } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { platformMeta } from "@/lib/scam/platforms";
 
 interface ConnectedChannel {
   id: string;
@@ -190,11 +191,16 @@ function ChannelsPageContent() {
 
   return (
     <div className="mx-auto w-full max-w-2xl flex-1 space-y-6 px-4 py-10">
-      <div>
-        <h1 className="text-2xl font-bold">Your connected apps</h1>
-        <p className="text-sm text-muted-foreground">
-          Link a messaging account and every incoming message gets scanned automatically, with a risk alert sent right back in the thread.
-        </p>
+      <div className="flex items-start gap-3">
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+          <Plug className="h-5 w-5" />
+        </div>
+        <div>
+          <h1 className="text-2xl font-bold">Your connected apps</h1>
+          <p className="text-sm text-muted-foreground">
+            Link a messaging account and every incoming message gets scanned automatically, with a risk alert sent right back in the thread.
+          </p>
+        </div>
       </div>
 
       {connected && (
@@ -212,32 +218,38 @@ function ChannelsPageContent() {
         <CardHeader>
           <CardTitle className="text-base">Your channels</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-3">
+        <CardContent className="space-y-2">
           {channels === null ? (
             <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
           ) : channels.length === 0 ? (
             <p className="text-sm text-muted-foreground">No channels connected yet.</p>
           ) : (
-            channels.map((channel) => (
-              <div key={channel.id} className="flex items-center justify-between rounded-md border px-3 py-2">
-                <div className="flex items-center gap-2">
-                  {channel.platform === "sms" ? (
-                    <Smartphone className="h-4 w-4 text-muted-foreground" />
-                  ) : (
-                    <MessageCircle className="h-4 w-4 text-muted-foreground" />
-                  )}
-                  <div>
-                    <p className="text-sm font-medium capitalize">{channel.platform}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {channel.phone_number ?? channel.username ?? channel.display_name ?? "Connected"}
-                    </p>
+            channels.map((channel) => {
+              const meta = platformMeta(channel.platform);
+              const Icon = meta.icon;
+              return (
+                <div key={channel.id} className="flex items-center justify-between rounded-xl border border-border/60 px-3 py-2.5">
+                  <div className="flex items-center gap-3">
+                    <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-white ${meta.badgeClass}`}>
+                      <Icon className="h-4 w-4" />
+                    </span>
+                    <div>
+                      <p className="text-sm font-medium">{meta.label}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {channel.phone_number ?? channel.username ?? channel.display_name ?? "Connected"}
+                      </p>
+                    </div>
                   </div>
+                  <Button variant="ghost" size="icon" onClick={() => handleDisconnect(channel.id)} disabled={removingId === channel.id}>
+                    {removingId === channel.id ? (
+                      <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                    ) : (
+                      <Trash2 className="h-4 w-4 text-muted-foreground" />
+                    )}
+                  </Button>
                 </div>
-                <Button variant="ghost" size="icon" onClick={() => handleDisconnect(channel.id)} disabled={removingId === channel.id}>
-                  <Trash2 className="h-4 w-4 text-muted-foreground" />
-                </Button>
-              </div>
-            ))
+              );
+            })
           )}
         </CardContent>
       </Card>
@@ -248,18 +260,47 @@ function ChannelsPageContent() {
           <CardDescription>You&apos;ll log in through the platform itself — your password never touches our servers.</CardDescription>
         </CardHeader>
         <CardContent className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          {OAUTH_CONNECTABLE.map(({ platform, label, href }) => (
-            <Button key={platform} variant="outline" disabled={connectedPlatforms.has(platform)} nativeButton={false} render={<a href={href} />}>
-              {connectedPlatforms.has(platform) ? `${label} ✓` : `Connect ${label}`}
-            </Button>
-          ))}
-          <Button variant="outline" disabled={connectedPlatforms.has("telegram") || startingTelegram} onClick={startTelegramConnect}>
-            {startingTelegram ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-            {connectedPlatforms.has("telegram") ? "Telegram ✓" : "Connect Telegram"}
+          {OAUTH_CONNECTABLE.map(({ platform, label, href }) => {
+            const meta = platformMeta(platform);
+            const Icon = meta.icon;
+            const isConnected = connectedPlatforms.has(platform);
+            return (
+              <Button
+                key={platform}
+                variant="outline"
+                disabled={isConnected}
+                nativeButton={false}
+                render={<a href={href} />}
+                className="justify-start"
+              >
+                <span className={`flex h-5 w-5 items-center justify-center rounded-full text-white ${meta.badgeClass}`}>
+                  <Icon className="h-3 w-3" />
+                </span>
+                {isConnected ? `${label} — Connected` : `Connect ${label}`}
+              </Button>
+            );
+          })}
+          <Button
+            variant="outline"
+            disabled={connectedPlatforms.has("telegram") || startingTelegram}
+            onClick={startTelegramConnect}
+            className="justify-start"
+          >
+            <span className={`flex h-5 w-5 items-center justify-center rounded-full text-white ${platformMeta("telegram").badgeClass}`}>
+              {startingTelegram ? <Loader2 className="h-3 w-3 animate-spin" /> : <Send className="h-3 w-3" />}
+            </span>
+            {connectedPlatforms.has("telegram") ? "Telegram — Connected" : "Connect Telegram"}
           </Button>
-          <Button variant="outline" disabled={connectedPlatforms.has("discord") || startingDiscord} onClick={startDiscordConnect}>
-            {startingDiscord ? <Loader2 className="h-4 w-4 animate-spin" /> : <MessageCircle className="h-4 w-4" />}
-            {connectedPlatforms.has("discord") ? "Discord ✓" : "Connect Discord"}
+          <Button
+            variant="outline"
+            disabled={connectedPlatforms.has("discord") || startingDiscord}
+            onClick={startDiscordConnect}
+            className="justify-start"
+          >
+            <span className={`flex h-5 w-5 items-center justify-center rounded-full text-white ${platformMeta("discord").badgeClass}`}>
+              {startingDiscord ? <Loader2 className="h-3 w-3 animate-spin" /> : <MessageCircle className="h-3 w-3" />}
+            </span>
+            {connectedPlatforms.has("discord") ? "Discord — Connected" : "Connect Discord"}
           </Button>
         </CardContent>
       </Card>

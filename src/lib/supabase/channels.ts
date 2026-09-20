@@ -1,6 +1,7 @@
 import { createClient, createServiceClient } from "./server";
 import { isSupabaseConfigured } from "./history";
 import { createProfile, ZernioApiError } from "@/lib/zernio/client";
+import type { SupabaseClient } from "@supabase/supabase-js";
 
 export type ChannelPlatform = "whatsapp" | "instagram" | "facebook" | "telegram" | "sms" | "slack" | "discord";
 
@@ -75,6 +76,34 @@ export async function saveConnectedChannel(userId: string, input: ConnectedChann
     .single();
   if (error) throw new Error(`Failed to save connected channel: ${error.message}`);
   return data.id as string;
+}
+
+/**
+ * The Zernio API key is shared across every ScamShield user, so an accountId
+ * alone isn't proof of ownership — verify it's actually one of THIS user's
+ * connected channels before doing anything through it.
+ */
+export async function requireOwnedZernioAccount(supabase: SupabaseClient, userId: string, accountId: string): Promise<boolean> {
+  const { data } = await supabase
+    .from("connected_channels")
+    .select("id")
+    .eq("user_id", userId)
+    .eq("provider_account_id", accountId)
+    .maybeSingle();
+
+  if (data != null) return true;
+
+  // Diagnostic only (no behavior change): a mismatch here almost always means
+  // the accountId Zernio's conversations list returns for this chat no longer
+  // matches what we stored at connect time (e.g. the account was reconnected
+  // on Zernio's side and got a new id). Logging both sides makes that visible
+  // in server logs instead of a bare 403 with no lead.
+  const { data: onFile } = await supabase.from("connected_channels").select("platform, provider_account_id").eq("user_id", userId);
+  console.error(
+    "[zernio ownership check] failed",
+    JSON.stringify({ userId, requestedAccountId: accountId, channelsOnFile: onFile ?? [] })
+  );
+  return false;
 }
 
 export async function deleteConnectedChannel(id: string): Promise<void> {
